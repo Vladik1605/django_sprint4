@@ -159,6 +159,12 @@ class ProfileView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['profile_user'] = self.profile_user
+        # provide `profile` alias for templates and ownership flag
+        context['profile'] = self.profile_user
+        context['is_owner'] = (
+            self.request.user.is_authenticated
+            and self.request.user == self.profile_user
+        )
         return context
 
 
@@ -273,7 +279,7 @@ class EditCommentView(UpdateView):
 
     model = Comment
     form_class = CommentForm
-    template_name = 'blog/comment_edit.html'
+    template_name = 'blog/comment.html'
     pk_url_kwarg = 'comment_id'
 
     def get_queryset(self):
@@ -307,7 +313,7 @@ edit_comment = login_required(EditCommentView.as_view())
 class DeleteCommentView(DeleteView):
 
     model = Comment
-    template_name = 'blog/comment_edit.html'
+    template_name = 'blog/comment.html'
     pk_url_kwarg = 'comment_id'
 
     def get_queryset(self):

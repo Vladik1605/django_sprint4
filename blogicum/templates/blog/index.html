@@ -1,31 +1,13 @@
 {% extends "base.html" %}
-{% block title %}
-  Лента записей
-{% endblock %}
+{% block title %}Главная | Блогикум{% endblock %}
 {% block content %}
-  <h1 class="mb-5">Лента записей</h1>
-  {% for post in post_list %}
-    <article class="mb-5">  
+  <h1>Публикации</h1>
+  {% for post in page_obj %}
+    <article class="mb-5">
       {% include "includes/post_card.html" %}
-    </article>   
+    </article>
+  {% empty %}
+    <p>Публикаций пока нет.</p>
   {% endfor %}
-  {% if page_obj.has_other_pages %}
-    <nav aria-label="Page navigation">
-      <ul class="pagination">
-        {% if page_obj.has_previous %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Назад</a>
-          </li>
-        {% endif %}
-        <li class="page-item active">
-          <span class="page-link">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
-        </li>
-        {% if page_obj.has_next %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Вперёд</a>
-          </li>
-        {% endif %}
-      </ul>
-    </nav>
-  {% endif %}
+  {% include "includes/paginator.html" %}
 {% endblock %}

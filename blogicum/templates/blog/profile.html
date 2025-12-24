@@ -1,42 +1,28 @@
 {% extends "base.html" %}
-{% load django_bootstrap5 %}
-{% block title %}Профиль пользователя{% endblock %}
+{% block title %}
+  Страница пользователя {{ profile.username }}
+{% endblock %}
 {% block content %}
-  <div class="card mb-5">
-    <div class="card-body">
-      <h1>Профиль {{ profile_user.username }}</h1>
-      <p><strong>Имя:</strong> {{ profile_user.first_name }} {{ profile_user.last_name }}</p>
-      {% if request.user.is_authenticated and request.user == profile_user %}
-        <div class="mt-3">
-          <a href="{% url 'blog:profile_edit' profile_user.username %}" class="btn btn-secondary">Редактировать профиль</a>
-          <a href="{% url 'password_change' %}" class="btn btn-secondary">Изменить пароль</a>
-        </div>
+  <h1 class="mb-5 text-center ">Страница пользователя {{ profile.username }}</h1>
+  <small>
+    <ul class="list-group list-group-horizontal justify-content-center mb-3">
+      <li class="list-group-item text-muted">Имя пользователя: {% if profile.get_full_name %}{{ profile.get_full_name }}{% else %}{{ profile.username }}{% endif %}</li>
+      <li class="list-group-item text-muted">Регистрация: {{ profile.date_joined|date:"d E Y, H:i" }}</li>
+      <li class="list-group-item text-muted">Роль: {% if profile.is_staff %}Админ{% else %}Пользователь{% endif %}</li>
+    </ul>
+    <ul class="list-group list-group-horizontal justify-content-center">
+      {% if is_owner %}
+      <a class="btn btn-sm text-muted" href="{% url 'blog:profile_edit' profile.username %}">Редактировать профиль</a>
+      <a class="btn btn-sm text-muted" href="{% url 'password_change' %}">Изменить пароль</a>
       {% endif %}
-    </div>
-  </div>
-  <h2>Публикации</h2>
-  {% for post in post_list %}
-    <article class="mb-5">  
+    </ul>
+  </small>
+  <br>
+  <h3 class="mb-5 text-center">Публикации пользователя</h3>
+  {% for post in page_obj %}
+    <article class="mb-5">
       {% include "includes/post_card.html" %}
-    </article>   
+    </article>
   {% endfor %}
-  {% if page_obj.has_other_pages %}
-    <nav aria-label="Page navigation">
-      <ul class="pagination">
-        {% if page_obj.has_previous %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Назад</a>
-          </li>
-        {% endif %}
-        <li class="page-item active">
-          <span class="page-link">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
-        </li>
-        {% if page_obj.has_next %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Вперёд</a>
-          </li>
-        {% endif %}
-      </ul>
-    </nav>
-  {% endif %}
+  {% include "includes/paginator.html" %}
 {% endblock %}

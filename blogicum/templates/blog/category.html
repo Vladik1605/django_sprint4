@@ -1,32 +1,14 @@
 {% extends "base.html" %}
 {% block title %}
-  Публикации в категории «{{ category.title }}»
+  Публикации в категории {{ category.title }}
 {% endblock %}
 {% block content %}
-<h1>Публикации в категории «{{ category.title }}»</h1>
-<p class="mb-5">{{ category.description }}</p>
-{% for post in post_list %}
-  <article class="mb-5">  
-    {% include "includes/post_card.html" %}
-  </article>   
-{% endfor %}
-{% if page_obj.has_other_pages %}
-  <nav aria-label="Page navigation">
-    <ul class="pagination">
-      {% if page_obj.has_previous %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Назад</a>
-        </li>
-      {% endif %}
-      <li class="page-item active">
-        <span class="page-link">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
-      </li>
-      {% if page_obj.has_next %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.next_page_number }}">Вперёд</a>
-        </li>
-      {% endif %}
-    </ul>
-  </nav>
-{% endif %}
+  <h1 class="text-center">Публикации в категории - {{ category.title }}</h1>
+  <p class="col-6 offset-3 mb-5 lead text-center">{{ category.description }}</p>
+  {% for post in page_obj %}
+    <article class="mb-5">  
+      {% include "includes/post_card.html" %}
+    </article>   
+  {% endfor %}
+  {% include "includes/paginator.html" %}
 {% endblock %}
