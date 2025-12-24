@@ -159,7 +159,6 @@ class ProfileView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['profile_user'] = self.profile_user
-        # provide `profile` alias for templates and ownership flag
         context['profile'] = self.profile_user
         context['is_owner'] = (
             self.request.user.is_authenticated
