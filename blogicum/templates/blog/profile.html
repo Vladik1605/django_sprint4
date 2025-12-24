@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Профиль пользователя{% endblock %}
+{% block content %}
+  <h1>Профиль {{ profile_user.username }}</h1>
+  <p>{{ profile_user.first_name }} {{ profile_user.last_name }}</p>
+  {% if request.user.is_authenticated and request.user == profile_user %}
+    <a href="{% url 'profile_edit' %}">Редактировать профиль</a>
+    <a href="{% url 'password_change' %}">Изменить пароль</a>
+  {% endif %}
+  <h2>Публикации</h2>
+  {% for post in post_list %}
+    <article class="mb-5">  
+      {% include "includes/post_card.html" %}
+    </article>   
+  {% endfor %}
+  {% if page_obj.has_other_pages %}
+    <div class="pagination">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+      {% endif %}
+      <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">next</a>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}

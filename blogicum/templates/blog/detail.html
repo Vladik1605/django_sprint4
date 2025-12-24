@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}
+{{ post.title }} | {% if post.location and post.location.is_published %}{{ post.location.name }} |{% endif %} {{ post.pub_date|date:"d E Y" }}
+{% endblock %}
+{% block content %}
+  <article>
+    <p>{{ post.pub_date|date:"d E Y" }} | {% if post.location and post.location.is_published %}{{ post.location.name }}{% else %}Планета Земля{% endif %}<br>
+      <small>От автора @{{ post.author.username }} в категории {% include "includes/category_link.html" %}</small></p>
+    <h3>{{ post.title }}</h3>
+    {% if post.image %}
+      <img src="{{ post.image.url }}" alt="" style="max-width:400px;">
+    {% endif %}
+    <p>{{ post.text|linebreaksbr }}</p>
+    {% if request.user.is_authenticated and request.user == post.author %}
+      <a href="{% url 'blog:edit_post' post.id %}">Редактировать</a>
+      <a href="{% url 'blog:delete_post' post.id %}">Удалить</a>
+    {% endif %}
+  </article> 
+  <section>
+    <h4>Комментарии ({{ post.comments.count }})</h4>
+    {% for comment in comments %}
+      <div>
+        <p>{{ comment.author.username }}: {{ comment.text|linebreaksbr }}</p>
+        {% if request.user.is_authenticated and request.user == comment.author %}
+          <a href="{% url 'blog:edit_comment' post.id comment.id %}">edit</a>
+          <a href="{% url 'blog:delete_comment' post.id comment.id %}">delete</a>
+        {% endif %}
+      </div>
+    {% empty %}
+      <p>Комментариев пока нет.</p>
+    {% endfor %}
+
+    {% if request.user.is_authenticated %}
+      <h5>Добавить комментарий</h5>
+      <form method="post" action="{% url 'blog:add_comment' post.id %}">
+        {% csrf_token %}
+        {{ comment_form.text }}
+        <button type="submit">Отправить</button>
+      </form>
+    {% else %}
+      <p>Только авторизованные пользователи могут оставлять комментарии.</p>
+    {% endif %}
+  </section>
+{% endblock %}

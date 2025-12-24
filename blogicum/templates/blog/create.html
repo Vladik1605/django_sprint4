@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Создать/Редактировать публикацию{% endblock %}
+{% block content %}
+  <h1>Создать публикацию</h1>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <div>
+      {{ form.title.label_tag }}<br>
+      {{ form.title }}
+    </div>
+    <div>
+      {{ form.text.label_tag }}<br>
+      {{ form.text }}
+    </div>
+    <div>
+      {{ form.pub_date.label_tag }}<br>
+      {{ form.pub_date }}
+    </div>
+    <div>
+      {{ form.category.label_tag }}<br>
+      {{ form.category }}
+    </div>
+    <div>
+      {{ form.location.label_tag }}<br>
+      {{ form.location }}
+    </div>
+    <div>
+      {{ form.image.label_tag }}<br>
+      {{ form.image }}
+    </div>
+    <button type="submit">Отправить</button>
+  </form>
+{% endblock %}
