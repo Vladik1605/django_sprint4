@@ -24,7 +24,17 @@
             </a>
           </li>
         </ul>
-      {% endwith %}      
+      {% endwith %}
+      <div class="d-flex">
+        {% if request.user.is_authenticated %}
+          <a class="btn btn-outline-light me-2" href="{% url 'blog:create_post' %}">Создать пост</a>
+          <a class="btn btn-outline-light me-2" href="{% url 'blog:profile' request.user.username %}">Мой профиль</a>
+          <a class="btn btn-light" href="{% url 'logout' %}">Выйти</a>
+        {% else %}
+          <a class="btn btn-outline-light me-2" href="{% url 'login' %}">Войти</a>
+          <a class="btn btn-light" href="{% url 'register' %}">Регистрация</a>
+        {% endif %}
+      </div>      
     </div>
   </nav> 
 </header>

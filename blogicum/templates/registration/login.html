@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% load django_bootstrap5 %}
 {% block content %}
   <h1>Вход</h1>
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Войти</button>
+    {% bootstrap_form form %}
+    <button type="submit" class="btn btn-primary mt-3">Войти</button>
   </form>
 {% endblock %}
