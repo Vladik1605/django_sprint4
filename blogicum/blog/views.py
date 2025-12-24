@@ -14,7 +14,6 @@ from django.views.generic import (
     DetailView,
     FormView,
     ListView,
-    TemplateView,
     UpdateView,
 )
 from django.views.generic.detail import SingleObjectMixin
@@ -26,7 +25,6 @@ User = get_user_model()
 
 
 class PostListView(ListView):
-    """Display list of published posts with pagination."""
 
     model = Post
     template_name = 'blog/index.html'
@@ -51,7 +49,6 @@ index = PostListView.as_view()
 
 
 class PostDetailView(DetailView):
-    """Display detailed post view with comments."""
 
     model = Post
     template_name = 'blog/detail.html'
@@ -69,7 +66,6 @@ class PostDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         post = self.get_object()
 
-        # Check visibility
         is_published = (
             post.pub_date <= timezone.now()
             and post.is_published
@@ -77,7 +73,6 @@ class PostDetailView(DetailView):
             and post.category.is_published
         )
         if not is_published:
-            # Allow author to see own unpublished/scheduled posts
             if (
                 not self.request.user.is_authenticated
                 or self.request.user != post.author
@@ -95,7 +90,6 @@ post_detail = PostDetailView.as_view()
 
 
 class CategoryPostListView(ListView):
-    """Display published posts in specific category."""
 
     model = Post
     template_name = 'blog/category.html'
@@ -131,7 +125,6 @@ category_posts = CategoryPostListView.as_view()
 
 
 class ProfileView(ListView):
-    """Display user profile with their posts."""
 
     model = Post
     template_name = 'blog/profile.html'
@@ -147,7 +140,6 @@ class ProfileView(ListView):
             'location', 'category', 'author'
         ).prefetch_related('comments')
 
-        # Show all posts if viewing own profile, else only published
         if (
             self.request.user.is_authenticated
             and self.request.user == self.profile_user
@@ -174,7 +166,6 @@ profile = ProfileView.as_view()
 
 
 class CreatePostView(CreateView):
-    """Create new post."""
 
     model = Post
     form_class = PostForm
@@ -196,7 +187,6 @@ create_post = login_required(CreatePostView.as_view())
 
 
 class EditPostView(UpdateView):
-    """Edit existing post."""
 
     model = Post
     form_class = PostForm
@@ -204,7 +194,13 @@ class EditPostView(UpdateView):
     pk_url_kwarg = 'id'
 
     def get_queryset(self):
-        return Post.objects.filter(author=self.request.user)
+        return Post.objects.all()
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.author != request.user:
+            return redirect('blog:post_detail', id=obj.pk)
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         if not form.instance.pub_date:
@@ -217,17 +213,13 @@ class EditPostView(UpdateView):
         )
 
     def get_object(self, queryset=None):
-        obj = super().get_object(queryset)
-        if obj.author != self.request.user:
-            raise Http404('You are not the author of this post.')
-        return obj
+        return super().get_object(queryset)
 
 
 edit_post = login_required(EditPostView.as_view())
 
 
 class DeletePostView(DeleteView):
-    """Delete post with confirmation."""
 
     model = Post
     template_name = 'blog/detail.html'
@@ -235,13 +227,16 @@ class DeletePostView(DeleteView):
     success_url = reverse_lazy('blog:index')
 
     def get_queryset(self):
-        return Post.objects.filter(author=self.request.user)
+        return Post.objects.all()
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.author != request.user and not request.user.is_staff:
+            return redirect('blog:post_detail', id=obj.pk)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_object(self, queryset=None):
-        obj = super().get_object(queryset)
-        if obj.author != self.request.user and not self.request.user.is_staff:
-            raise Http404('You are not the author of this post.')
-        return obj
+        return super().get_object(queryset)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -253,7 +248,6 @@ delete_post = login_required(DeletePostView.as_view())
 
 
 class AddCommentView(SingleObjectMixin, FormView):
-    """Add comment to post."""
 
     model = Post
     form_class = CommentForm
@@ -276,7 +270,6 @@ add_comment = login_required(AddCommentView.as_view())
 
 
 class EditCommentView(UpdateView):
-    """Edit existing comment."""
 
     model = Comment
     form_class = CommentForm
@@ -284,7 +277,13 @@ class EditCommentView(UpdateView):
     pk_url_kwarg = 'comment_id'
 
     def get_queryset(self):
-        return Comment.objects.filter(author=self.request.user)
+        return Comment.objects.all()
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.author != request.user:
+            return redirect('blog:post_detail', id=self.kwargs.get('post_id'))
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -299,24 +298,26 @@ class EditCommentView(UpdateView):
         )
 
     def get_object(self, queryset=None):
-        obj = super().get_object(queryset)
-        if obj.author != self.request.user:
-            raise Http404('You are not the author of this comment.')
-        return obj
+        return super().get_object(queryset)
 
 
 edit_comment = login_required(EditCommentView.as_view())
 
 
 class DeleteCommentView(DeleteView):
-    """Delete comment with confirmation."""
 
     model = Comment
     template_name = 'blog/comment_edit.html'
     pk_url_kwarg = 'comment_id'
 
     def get_queryset(self):
-        return Comment.objects.filter(author=self.request.user)
+        return Comment.objects.all()
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.author != request.user and not request.user.is_staff:
+            return redirect('blog:post_detail', id=self.kwargs.get('post_id'))
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy(
@@ -332,17 +333,13 @@ class DeleteCommentView(DeleteView):
         return context
 
     def get_object(self, queryset=None):
-        obj = super().get_object(queryset)
-        if obj.author != self.request.user and not self.request.user.is_staff:
-            raise Http404('You are not the author of this comment.')
-        return obj
+        return super().get_object(queryset)
 
 
 delete_comment = login_required(DeleteCommentView.as_view())
 
 
 class RegistrationView(CreateView):
-    """User registration."""
 
     form_class = RegistrationForm
     template_name = 'registration/registration_form.html'
@@ -353,7 +350,6 @@ register = RegistrationView.as_view()
 
 
 class EditProfileView(UpdateView):
-    """Edit user profile."""
 
     model = User
     fields = ('first_name', 'last_name', 'username', 'email')
