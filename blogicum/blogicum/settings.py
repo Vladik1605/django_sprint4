@@ -113,11 +113,9 @@ STATICFILES_DIRS = [
 TEMPLATES_DIR = BASE_DIR / 'templates'
 
 MEDIA_URL = '/media/'
-# serve media from repository root `media/` so uploaded files placed there are served
-MEDIA_ROOT = BASE_DIR.parent / 'media'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-# tests expect EMAIL_FILE_PATH == BASE_DIR / 'sent_emails'
 EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
 
 LOGIN_REDIRECT_URL = 'blog:index'
